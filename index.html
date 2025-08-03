@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finance Calculator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      font-family: 'Poppins', sans-serif;
+      color: #f0f0f0;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 30px 40px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 25px;
+      font-weight: 600;
+      font-size: 2.2rem;
+      letter-spacing: 1.1px;
+      color: #ffec99;
+      text-shadow: 1px 1px 8px #ffda76;
+      animation: glow 2.5s infinite alternate;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 6px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #fff;
+      text-shadow: 0 0 4px #000;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      outline: none;
+      transition: box-shadow 0.3s ease;
+      box-shadow: inset 0 0 6px #444;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+
+    select:hover, input:hover, select:focus, input:focus {
+      box-shadow: 0 0 12px #ffd700;
+      background: rgba(255,255,255,0.3);
+      color: #222;
+    }
+
+    button {
+      margin-top: 15px;
+      background: linear-gradient(45deg, #ffbb00, #ff8800);
+      border: none;
+      color: #222;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 12px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px #ffbb00aa;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px #ffbb0088;
+    }
+
+    #simpleResult, #result, #discountResult, #taxResult {
+      margin-top: 15px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ffd700;
+      text-shadow: 0 0 10px #ffcc00;
+      min-height: 36px;
+      transition: opacity 0.5s ease;
+    }
+
+    /* Form containers with smooth fade */
+    #simpleForm, #compoundForm, #interestSubOption, #discountForm, #taxForm {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity 0.6s ease, max-height 0.6s ease;
+    }
+    #simpleForm.show, #compoundForm.show, #interestSubOption.show, #discountForm.show, #taxForm.show {
+      opacity: 1;
+      max-height: 500px;
+      margin-top: 20px;
+    }
+
+    /* Formula style */
+    p strong {
+      background: linear-gradient(45deg, #ffd54f, #ff6f00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      display: inline-block;
+      padding: 0 4px;
+      text-shadow: 1px 1px 3px #ff8f00aa;
+      animation: pulse 2s infinite alternate;
+    }
+
+    /* Animations */
+    @keyframes glow {
+      0% { text-shadow: 0 0 4px #ffec99, 0 0 10px #ffec99;}
+      100% { text-shadow: 0 0 10px #ffec99, 0 0 20px #ffec99;}
+    }
+    @keyframes pulse {
+      0% { filter: brightness(1); }
+      100% { filter: brightness(1.3); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Finance Option Selector</h1>
+
+    <label for="optionType">Choose an Option:</label>
+    <select id="optionType" onchange="handleOptionChange()">
+      <option value="">--Select--</option>
+      <option value="interest">Interest</option>
+      <option value="discount">Discount</option>
+      <option value="tax">Tax</option>
+    </select>
+
+    <!-- Interest sub-options -->
+    <div id="interestSubOption">
+      <label for="interestType">Select Interest Type:</label>
+      <select id="interestType" onchange="handleInterestTypeChange()">
+        <option value="">--Select--</option>
+        <option value="simple">Simple Interest</option>
+        <option value="compound">Compound Interest</option>
+      </select>
+    </div>
+
+    <!-- Simple Interest Form -->
+    <div id="simpleForm">
+      <h2>Simple Interest Calculator</h2>
+      <p>Formula: <strong>SI = (P × r × t) / 100</strong></p>
+      <p>Where:<br>
+        SI = Simple Interest, <br>
+        P = Principal, <br>
+        r = Interest Rate (%), <br>
+        t = Time in years
+      </p>
+
+      <input type="number" id="simpleP" placeholder="Principal (P)" min="0" />
+      <input type="number" id="simpleR" placeholder="Interest Rate (%)" min="0" step="0.01" />
+      <input type="number" id="simpleT" placeholder="Time (years)" min="0" step="0.1" />
+      <button onclick="calculateSimple()">Calculate</button>
+
+      <div id="simpleResult"></div>
+    </div>
+
+    <!-- Compound Interest Form -->
+    <div id="compoundForm">
+      <h2>Compound Interest Calculator</h2>
+      <p>Formula: <strong>S = P(1 + r/n)<sup>nt</sup></strong></p>
+      <p>Where:<br>
+        S = Final Amount, <br>
+        P = Principal, <br>
+        r = Interest Rate (decimal), <br>
+        n = Compounding frequency/year, <br>
+        t = Time in years
+      </p>
+
+      <input type="number" id="P" placeholder="Principal (P)" min="0" />
+      <input type="number" id="r" placeholder="Interest Rate (%)" min="0" step="0.01" />
+      <input type="number" id="n" placeholder="Compounding/year (n)" min="1" step="1" />
+      <input type="number" id="t" placeholder="Time (years)" min="0" step="0.1" />
+      <button onclick="calculateCompound()">Calculate</button>
+
+      <div id="result"></div>
+    </div>
+
+    <!-- Discount Form -->
+    <div id="discountForm">
+      <h2>Discount Calculator</h2>
+      <p>Formula: <strong>Discount = (Original Price × Discount %) / 100</strong></p>
+      <p>Where:<br>
+        Original Price = Price before discount, <br>
+        Discount % = Discount rate (%)
+      </p>
+
+      <input type="number" id="originalPrice" placeholder="Original Price" min="0" step="0.01" />
+      <input type="number" id="discountRate" placeholder="Discount Rate (%)" min="0" max="100" step="0.01" />
+      <button onclick="calculateDiscount()">Calculate</button>
+
+      <div id="discountResult"></div>
+    </div>
+
+    <!-- Tax Form -->
+    <div id="taxForm">
+      <h2>Tax Calculator</h2>
+      <p>Formula: <strong>Tax = (Amount × Tax Rate %) / 100</strong></p>
+      <p>Where:<br>
+        Amount = Amount before tax, <br>
+        Tax Rate % = Tax rate (%)
+      </p>
+
+      <input type="number" id="amountBeforeTax" placeholder="Amount Before Tax" min="0" step="0.01" />
+      <input type="number" id="taxRate" placeholder="Tax Rate (%)" min="0" max="100" step="0.01" />
+      <button onclick="calculateTax()">Calculate</button>
+
+      <div id="taxResult"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // Cache DOM elements
+    const interestSubOption = document.getElementById("interestSubOption");
+    const simpleForm = document.getElementById("simpleForm");
+    const compoundForm = document.getElementById("compoundForm");
+    const discountForm = document.getElementById("discountForm");
+    const taxForm = document.getElementById("taxForm");
+
+    // Hide all forms initially
+    interestSubOption.classList.remove("show");
+    simpleForm.classList.remove("show");
+    compoundForm.classList.remove("show");
+    discountForm.classList.remove("show");
+    taxForm.classList.remove("show");
+
+    // Handle main option change
+    function handleOptionChange() {
+      const optionType = document.getElementById("optionType").value;
+
+      // Hide all forms and results first
+      interestSubOption.classList.remove("show");
+      simpleForm.classList.remove("show");
+      compoundForm.classList.remove("show");
+      discountForm.classList.remove("show");
+      taxForm.classList.remove("show");
+      clearResults();
+
+      if (optionType === "interest") {
+        interestSubOption.classList.add("show");
+      } else if (optionType === "discount") {
+        discountForm.classList.add("show");
+      } else if (optionType === "tax") {
+        taxForm.classList.add("show");
+      }
+    }
+
+    // Handle interest type change (simple or compound)
+    function handleInterestTypeChange() {
+      const interestType = document.getElementById("interestType").value;
+
+      simpleForm.classList.remove("show");
+      compoundForm.classList.remove("show");
+      clearResults();
+
+      if (interestType === "simple") {
+        simpleForm.classList.add("show");
+      } else if (interestType === "compound") {
+        compoundForm.classList.add("show");
+      }
+    }
+
+    // Clear all result displays
+    function clearResults() {
+      document.getElementById("result").textContent = "";
+      document.getElementById("simpleResult").textContent = "";
+      document.getElementById("discountResult").textContent = "";
+      document.getElementById("taxResult").textContent = "";
+    }
+
+    // Animate numbers counting up for result display
+    function animateValue(id, start, end, duration) {
+      let range = end - start;
+      let current = start;
+      let increment = range / (duration / 20);
+      let obj = document.getElementById(id);
+      let timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+          current = end;
+          clearInterval(timer);
+        }
+        obj.textContent = current.toFixed(2);
+      }, 20);
+    }
+
+    // Calculate Simple Interest
+    function calculateSimple() {
+      const P = parseFloat(document.getElementById("simpleP").value);
+      const r = parseFloat(document.getElementById("simpleR").value);
+      const t = parseFloat(document.getElementById("simpleT").value);
+
+      if (isNaN(P) || isNaN(r) || isNaN(t) || P < 0 || r < 0 || t < 0) {
+        document.getElementById("simpleResult").textContent = "Please fill in all fields correctly.";
+        return;
+      }
+
+      const SI = (P * r * t) / 100;
+      animateValue("simpleResult", 0, SI, 1000);
+      document.getElementById("simpleResult").insertAdjacentHTML('beforeend', ' (Simple Interest SI)');
+    }
+
+    // Calculate Compound Interest
+    function calculateCompound() {
+      const P = parseFloat(document.getElementById("P").value);
+      const r = parseFloat(document.getElementById("r").value) / 100;
+      const n = parseFloat(document.getElementById("n").value);
+      const t = parseFloat(document.getElementById("t").value);
+
+      if (isNaN(P) || isNaN(r) || isNaN(n) || isNaN(t) || P < 0 || r < 0 || n < 1 || t < 0) {
+        document.getElementById("result").textContent = "Please fill in all fields correctly.";
+        return;
+      }
+
+      const S = P * Math.pow((1 + r / n), n * t);
+      animateValue("result", 0, S, 1000);
+      document.getElementById("result").insertAdjacentHTML('beforeend', ' (Final Amount S)');
+    }
+
+    // Calculate Discount
+    function calculateDiscount() {
+      const originalPrice = parseFloat(document.getElementById("originalPrice").value);
+      const discountRate = parseFloat(document.getElementById("discountRate").value);
+
+      if (isNaN(originalPrice) || isNaN(discountRate) || originalPrice < 0 || discountRate < 0 || discountRate > 100) {
+        document.getElementById("discountResult").textContent = "Please fill in all fields correctly.";
+        return;
+      }
+
+      const discount = (originalPrice * discountRate) / 100;
+      animateValue("discountResult", 0, discount, 1000);
+      document.getElementById("discountResult").insertAdjacentHTML('beforeend', ' (Discount Amount)');
+    }
+
+    // Calculate Tax
+    function calculateTax() {
+      const amountBeforeTax = parseFloat(document.getElementById("amountBeforeTax").value);
+      const taxRate = parseFloat(document.getElementById("taxRate").value);
+
+      if (isNaN(amountBeforeTax) || isNaN(taxRate) || amountBeforeTax < 0 || taxRate < 0 || taxRate > 100) {
+        document.getElementById("taxResult").textContent = "Please fill in all fields correctly.";
+        return;
+      }
+
+      const tax = (amountBeforeTax * taxRate) / 100;
+      animateValue("taxResult", 0, tax, 1000);
+      document.getElementById("taxResult").insertAdjacentHTML('beforeend', ' (Tax Amount)');
+    }
+  </script>
+</body>
+</html>
